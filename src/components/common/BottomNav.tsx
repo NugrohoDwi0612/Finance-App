@@ -2,8 +2,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Home, Search, Plus, BarChart2, User } from "lucide-react";
-import { TabType } from "@/types"; // <-- Diperbaiki
-import { useApp } from "@/context/AppContext"; // <-- Diperbaiki
+import { TabType } from "@/types"; // <-- Dirapikan path aliasnya
+import { useApp } from "@/context/AppContext";
 
 export type { TabType };
 
@@ -23,7 +23,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const { colorPreset, user, theme, navSettings } = useApp();
   const handleOpenAdd = onOpenAddTransaction || onOpenAddModal || (() => {});
 
-  // Determine active slot index
+  // Determine active slot index (0: Home, 1: Search/Tx, 2: Add, 3: Analytics, 4: More/Profile)
   const getSlotIndexFromTab = (tab?: string): number => {
     if (tab === "dashboard") return 0;
     if (tab === "transactions") return 1;
@@ -37,7 +37,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const showLabels = Boolean(navSettings?.showLabels);
   const showAvatar = navSettings?.showProfileAvatar !== false;
 
-  // Refs and dynamic measurement
+  // Refs and dynamic measurement for mathematical alignment
   const navContainerRef = useRef<HTMLElement | null>(null);
   const navInnerRef = useRef<HTMLDivElement | null>(null);
   const slotRefs = useRef<(HTMLButtonElement | HTMLDivElement | null)[]>([]);
@@ -125,7 +125,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     [onSelectTab, handleOpenAdd],
   );
 
-  // Pointer gesture handlers
+  // Pointer gesture handlers for dragging the oval glass across menus
   const handlePointerDown = (e: React.PointerEvent) => {
     const container = navInnerRef.current || navContainerRef.current;
     if (!container) return;
@@ -231,11 +231,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     selectSlot(index);
   };
 
-  // Transparency percentage
   const transparencyVal = navSettings?.transparency ?? 25;
   const alpha = Math.min(1, Math.max(0, transparencyVal / 100));
 
-  // Blur intensity mapping
   const blurClasses = {
     none: "backdrop-blur-none",
     light: "backdrop-blur-md",
@@ -244,8 +242,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       "backdrop-blur-3xl [-webkit-backdrop-filter:blur(30px)_saturate(190%)_contrast(102%)]",
   }[navSettings?.blurIntensity || "ultra"];
 
-  // Compute liquid glass dynamic background
-  const isDark = theme === "dark";
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" &&
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
   const glassBg = isDark
     ? `rgba(18, 18, 18, ${alpha})`
     : `rgba(255, 255, 255, ${alpha})`;
@@ -271,11 +272,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const effectiveHighlightSlot = isDragging ? hoveredSlot : activeSlotIndex;
 
   return (
-    // PERBAIKAN: pb-safe-nav memastikan jarak bawah presisi pada iPhone Berponi
     <aside
       aria-label="Navigasi Bawah iPhone Liquid Glass"
+      // KUNCI PERBAIKAN: Menambahkan env(safe-area-inset-bottom) langsung pada posisi bottom
       className={`fixed left-0 right-0 z-40 pointer-events-none flex justify-center transition-all duration-300 ${
-        isDocked ? "bottom-0 px-0 pb-0" : "bottom-0 px-3.5 pb-safe-nav pt-4" // <-- Penyesuaian Ruang SafeArea Apple PWA
+        isDocked
+          ? "bottom-0 px-0"
+          : "bottom-[max(0.65rem,env(safe-area-inset-bottom))] px-3.5 sm:px-4"
       }`}
     >
       <nav
@@ -294,11 +297,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         }}
         className={`pointer-events-auto relative transition-all duration-300 isolate flex flex-col justify-center shadow-2xl touch-none select-none ${blurClasses} ${
           isDocked
-            ? "w-full max-w-md border-t border-b-0 border-x-0 sm:border-x border-stone-200/50 dark:border-stone-800/60 px-3 pt-1.5 pb-safe bg-opacity-90"
+            ? "w-full max-w-md border-t border-b-0 border-x-0 sm:border-x border-stone-200/50 dark:border-stone-800/60 px-3 pt-1.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] bg-opacity-90"
             : "w-full max-w-[390px] rounded-[32px] border px-2.5 py-1.5 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.18),0_24px_50px_-12px_rgba(0,0,0,0.14),inset_0_1px_1.5px_0_rgba(255,255,255,0.75),inset_0_-1px_2px_0_rgba(0,0,0,0.06)] dark:shadow-[0_20px_48px_-8px_rgba(0,0,0,0.7),0_10px_24px_rgba(0,0,0,0.5),inset_0_1px_1.5px_0_rgba(255,255,255,0.22),inset_0_-1px_1.5px_0_rgba(0,0,0,0.4)]"
         }`}
       >
-        {/* Specular Liquid Glare */}
+        {/* Specular Liquid Glare Reflection Sheen on Main Dock */}
         {!isDocked && (
           <div
             className="absolute inset-0 rounded-[32px] pointer-events-none overflow-hidden"
@@ -313,7 +316,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           ref={navInnerRef}
           className="relative w-full flex items-center justify-between"
         >
-          {/* DRAGGABLE OVAL LIQUID GLASS */}
+          {/* DRAGGABLE OVAL LIQUID GLASS ACTIVE LENS */}
           <div
             className="absolute top-1/2 -translate-y-1/2 pointer-events-none rounded-[22px] isolate z-10 overflow-hidden"
             style={{
@@ -352,7 +355,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             <div className="absolute top-0 inset-x-2 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
           </div>
 
-          {/* 1. Home */}
+          {/* 1. Home / Beranda */}
           <button
             ref={(el) => {
               slotRefs.current[0] = el;
@@ -364,6 +367,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 ? "text-stone-950 dark:text-white font-bold scale-105"
                 : "text-stone-500/80 dark:text-stone-400/80 hover:text-stone-950 dark:hover:text-white"
             }`}
+            title="Beranda"
           >
             <Home
               className="w-5 h-5 transition-transform duration-200"
@@ -377,7 +381,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             )}
           </button>
 
-          {/* 2. Transaksi */}
+          {/* 2. Cari & Transaksi */}
           <button
             ref={(el) => {
               slotRefs.current[1] = el;
@@ -389,6 +393,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 ? "text-stone-950 dark:text-white font-bold scale-105"
                 : "text-stone-500/80 dark:text-stone-400/80 hover:text-stone-950 dark:hover:text-white"
             }`}
+            title="Transaksi"
           >
             <Search
               className="w-5 h-5 transition-transform duration-200"
@@ -401,7 +406,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             )}
           </button>
 
-          {/* 3. Action Catat (+ Button) */}
+          {/* 3. Central Action Button (+ Catat) */}
           <div
             ref={(el) => {
               slotRefs.current[2] = el;
@@ -420,6 +425,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                   ? "scale-110 ring-2 ring-white"
                   : ""
               }`}
+              title="Catat Transaksi"
             >
               <div
                 className="absolute inset-0 rounded-[16px] pointer-events-none"
@@ -432,7 +438,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             </button>
           </div>
 
-          {/* 4. Analitik */}
+          {/* 4. Laporan & Analitik */}
           <button
             ref={(el) => {
               slotRefs.current[3] = el;
@@ -444,6 +450,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 ? "text-stone-950 dark:text-white font-bold scale-105"
                 : "text-stone-500/80 dark:text-stone-400/80 hover:text-stone-950 dark:hover:text-white"
             }`}
+            title="Laporan"
           >
             <BarChart2
               className="w-5 h-5 transition-transform duration-200"
@@ -456,7 +463,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             )}
           </button>
 
-          {/* 5. Menu Lain / Avatar */}
+          {/* 5. Menu & Profil */}
           <button
             ref={(el) => {
               slotRefs.current[4] = el;
@@ -468,6 +475,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 ? "text-stone-950 dark:text-white font-bold scale-105"
                 : "text-stone-500/80 dark:text-stone-400/80 hover:text-stone-950 dark:hover:text-white"
             }`}
+            title="Profil"
           >
             {showAvatar && user?.avatarUrl ? (
               <div
@@ -490,9 +498,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 strokeWidth={effectiveHighlightSlot === 4 ? 2.6 : 2}
               />
             )}
+
             {showLabels && (
               <span className="text-[10px] font-semibold tracking-tight mt-0.5 leading-tight">
-                Menu
+                Profil
               </span>
             )}
           </button>
