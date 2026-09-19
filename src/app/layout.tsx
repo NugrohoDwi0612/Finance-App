@@ -6,12 +6,15 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const viewport: Viewport = {
-  themeColor: "#0c0a09",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f4" }, // Warna bg-stone-100 saat Light Mode
+    { media: "(prefers-color-scheme: dark)", color: "#0c0a09" }, // Warna bg-stone-950 saat Dark Mode
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover",
+  viewportFit: "cover", // Wajib "cover" agar mengisi layar iPhone penuh hingga ujung poni
 };
 
 export const metadata: Metadata = {
@@ -20,7 +23,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "black-translucent", // Wajib agar tidak ada balok warna aneh di atas/bawah
     title: "CatatUang",
   },
 };
@@ -31,15 +34,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // suppressHydrationWarning mencegah error dari ekstensi Chrome
     <html lang="id" className="dark" suppressHydrationWarning>
+      {/* overscroll-none untuk mencegah efek membal karet khas iPhone di layar luar */}
       <body
-        // 2. Body dinamis: Abu-abu di mode terang, Hitam di mode gelap
-        className={`${inter.className} bg-stone-200 dark:bg-stone-950 text-stone-900 dark:text-stone-100 antialiased overflow-hidden transition-colors duration-200`}
+        className={`${inter.className} bg-stone-200 dark:bg-stone-950 text-stone-900 dark:text-stone-100 antialiased overflow-hidden transition-colors duration-300 overscroll-none`}
         suppressHydrationWarning
       >
-        {/* 3. Frame Mobile: Putih di mode terang, Gelap di mode gelap */}
-        <div className="mx-auto flex h-[100dvh] max-w-md flex-col bg-stone-50 dark:bg-stone-900 border-x border-stone-200/80 dark:border-stone-800/80 shadow-2xl relative overflow-hidden transition-colors duration-200">
+        {/* Frame Mobile Dinamis. Menggunakan 100vh fallback untuk HP lama dan 100dvh untuk HP modern */}
+        <div className="mx-auto flex h-[100vh] h-[100dvh] max-w-md flex-col bg-stone-50 dark:bg-stone-900 shadow-2xl relative overflow-hidden transition-colors duration-300">
           <Toaster
             position="top-center"
             richColors

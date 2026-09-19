@@ -2,8 +2,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Home, Search, Plus, BarChart2, User } from "lucide-react";
-import { TabType } from "../../types";
-import { useApp } from "../../context/AppContext";
+import { TabType } from "@/types"; // <-- Diperbaiki
+import { useApp } from "@/context/AppContext"; // <-- Diperbaiki
 
 export type { TabType };
 
@@ -23,7 +23,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const { colorPreset, user, theme, navSettings } = useApp();
   const handleOpenAdd = onOpenAddTransaction || onOpenAddModal || (() => {});
 
-  // Determine active slot index (0: Home, 1: Search/Tx, 2: Add, 3: Analytics, 4: More/Profile)
+  // Determine active slot index
   const getSlotIndexFromTab = (tab?: string): number => {
     if (tab === "dashboard") return 0;
     if (tab === "transactions") return 1;
@@ -37,7 +37,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const showLabels = Boolean(navSettings?.showLabels);
   const showAvatar = navSettings?.showProfileAvatar !== false;
 
-  // Refs and dynamic measurement for mathematical alignment
+  // Refs and dynamic measurement
   const navContainerRef = useRef<HTMLElement | null>(null);
   const navInnerRef = useRef<HTMLDivElement | null>(null);
   const slotRefs = useRef<(HTMLButtonElement | HTMLDivElement | null)[]>([]);
@@ -125,7 +125,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     [onSelectTab, handleOpenAdd],
   );
 
-  // Pointer gesture handlers for dragging the oval glass across menus
+  // Pointer gesture handlers
   const handlePointerDown = (e: React.PointerEvent) => {
     const container = navInnerRef.current || navContainerRef.current;
     if (!container) return;
@@ -140,7 +140,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       active: true,
     };
     dragDistanceRef.current = 0;
-    // NOTE: Do NOT setPointerCapture here so native button clicks & taps work effortlessly!
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -151,15 +150,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     const deltaY = e.clientY - pointerStartRef.current.y;
     dragDistanceRef.current = Math.hypot(deltaX, deltaY);
 
-    // Only initiate drag if moved noticeably
     if (dragDistanceRef.current > 8) {
       if (!isDragging) {
         setIsDragging(true);
         try {
           e.currentTarget.setPointerCapture(e.pointerId);
-        } catch {
-          // Ignore
-        }
+        } catch {}
       }
 
       const halfGlass = glassWidth / 2;
@@ -172,7 +168,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       );
       setDragCenterX(newCenterX);
 
-      // Find nearest slot
       let nearestIndex = activeSlotIndex;
       let minDistance = Infinity;
       slotPositions.forEach((pos, idx) => {
@@ -193,17 +188,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch {
-      // Ignore
-    }
+    } catch {}
 
     const container = navInnerRef.current || navContainerRef.current;
 
     if (isDragging && hoveredSlot !== null) {
-      // User dragged and released on a slot
       selectSlot(hoveredSlot);
     } else if (!isDragging && dragDistanceRef.current <= 8 && container) {
-      // Direct click or tap on nav bar outside exact button bounds
       const containerRect = container.getBoundingClientRect();
       const relativeX = e.clientX - containerRect.left;
 
@@ -234,14 +225,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     setHoveredSlot(null);
   };
 
-  // Slot click handler for buttons
   const handleSlotClick = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();
-    if (dragDistanceRef.current > 8) return; // Ignore if user performed a drag gesture
+    if (dragDistanceRef.current > 8) return;
     selectSlot(index);
   };
 
-  // Transparency percentage (0 to 100)
+  // Transparency percentage
   const transparencyVal = navSettings?.transparency ?? 25;
   const alpha = Math.min(1, Math.max(0, transparencyVal / 100));
 
@@ -260,7 +250,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     ? `rgba(18, 18, 18, ${alpha})`
     : `rgba(255, 255, 255, ${alpha})`;
 
-  // Specular top edge highlight opacity
   const borderTopColor = isDark
     ? `rgba(255, 255, 255, ${Math.max(0.12, (1 - alpha * 0.5) * 0.25)})`
     : `rgba(255, 255, 255, ${Math.max(0.35, (1 - alpha * 0.3) * 0.85)})`;
@@ -269,7 +258,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     ? `rgba(255, 255, 255, ${Math.max(0.08, alpha * 0.15)})`
     : `rgba(255, 255, 255, ${Math.max(0.2, alpha * 0.45)})`;
 
-  // Calculated left position of the oval glass lens
   const currentCenterX =
     isDragging && dragCenterX !== null
       ? dragCenterX
@@ -280,17 +268,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           : 50);
 
   const glassTargetLeft = currentCenterX - glassWidth / 2;
-
-  // Which slot is highlighted right now (hovered during drag, or active)
   const effectiveHighlightSlot = isDragging ? hoveredSlot : activeSlotIndex;
 
   return (
+    // PERBAIKAN: pb-safe-nav memastikan jarak bawah presisi pada iPhone Berponi
     <aside
       aria-label="Navigasi Bawah iPhone Liquid Glass"
       className={`fixed left-0 right-0 z-40 pointer-events-none flex justify-center transition-all duration-300 ${
-        isDocked
-          ? "bottom-0 px-0"
-          : "bottom-2.5 sm:bottom-4 px-3.5 sm:px-4 pb-[max(0.25rem,env(safe-area-inset-bottom))]"
+        isDocked ? "bottom-0 px-0 pb-0" : "bottom-0 px-3.5 pb-safe-nav pt-4" // <-- Penyesuaian Ruang SafeArea Apple PWA
       }`}
     >
       <nav
@@ -309,11 +294,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         }}
         className={`pointer-events-auto relative transition-all duration-300 isolate flex flex-col justify-center shadow-2xl touch-none select-none ${blurClasses} ${
           isDocked
-            ? "w-full max-w-md border-t border-b-0 border-x-0 sm:border-x border-stone-200/50 dark:border-stone-800/60 px-3 pt-1.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] bg-opacity-90"
+            ? "w-full max-w-md border-t border-b-0 border-x-0 sm:border-x border-stone-200/50 dark:border-stone-800/60 px-3 pt-1.5 pb-safe bg-opacity-90"
             : "w-full max-w-[390px] rounded-[32px] border px-2.5 py-1.5 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.18),0_24px_50px_-12px_rgba(0,0,0,0.14),inset_0_1px_1.5px_0_rgba(255,255,255,0.75),inset_0_-1px_2px_0_rgba(0,0,0,0.06)] dark:shadow-[0_20px_48px_-8px_rgba(0,0,0,0.7),0_10px_24px_rgba(0,0,0,0.5),inset_0_1px_1.5px_0_rgba(255,255,255,0.22),inset_0_-1px_1.5px_0_rgba(0,0,0,0.4)]"
         }`}
       >
-        {/* Specular Liquid Glare Reflection Sheen on Main Dock */}
+        {/* Specular Liquid Glare */}
         {!isDocked && (
           <div
             className="absolute inset-0 rounded-[32px] pointer-events-none overflow-hidden"
@@ -328,9 +313,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           ref={navInnerRef}
           className="relative w-full flex items-center justify-between"
         >
-          {/* ------------------------------------------------------------- */}
-          {/* DRAGGABLE OVAL LIQUID GLASS ACTIVE LENS (KACA OVAL MELAYANG) */}
-          {/* ------------------------------------------------------------- */}
+          {/* DRAGGABLE OVAL LIQUID GLASS */}
           <div
             className="absolute top-1/2 -translate-y-1/2 pointer-events-none rounded-[22px] isolate z-10 overflow-hidden"
             style={{
@@ -359,7 +342,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               willChange: "transform",
             }}
           >
-            {/* Subtle Specular Liquid Dome Highlight - soft & non-glaring */}
             <div
               className="absolute inset-0 rounded-[22px] pointer-events-none"
               style={{
@@ -367,14 +349,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                   "radial-gradient(ellipse at 50% 20%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.06) 60%, transparent 85%)",
               }}
             />
-
-            {/* Soft top specular reflection rim sheen */}
             <div className="absolute top-0 inset-x-2 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
           </div>
 
-          {/* ------------------------------------------------------------- */}
-          {/* 1. Home / Beranda */}
-          {/* ------------------------------------------------------------- */}
+          {/* 1. Home */}
           <button
             ref={(el) => {
               slotRefs.current[0] = el;
@@ -386,8 +364,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 ? "text-stone-950 dark:text-white font-bold scale-105"
                 : "text-stone-500/80 dark:text-stone-400/80 hover:text-stone-950 dark:hover:text-white"
             }`}
-            aria-label="Beranda"
-            title="Beranda"
           >
             <Home
               className="w-5 h-5 transition-transform duration-200"
@@ -401,9 +377,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             )}
           </button>
 
-          {/* ------------------------------------------------------------- */}
-          {/* 2. Cari & Transaksi */}
-          {/* ------------------------------------------------------------- */}
+          {/* 2. Transaksi */}
           <button
             ref={(el) => {
               slotRefs.current[1] = el;
@@ -415,8 +389,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 ? "text-stone-950 dark:text-white font-bold scale-105"
                 : "text-stone-500/80 dark:text-stone-400/80 hover:text-stone-950 dark:hover:text-white"
             }`}
-            aria-label="Transaksi & Pencarian"
-            title="Transaksi & Pencarian"
           >
             <Search
               className="w-5 h-5 transition-transform duration-200"
@@ -429,9 +401,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             )}
           </button>
 
-          {/* ------------------------------------------------------------- */}
-          {/* 3. Central Action Button (+ Catat) - Style Instagram Create */}
-          {/* ------------------------------------------------------------- */}
+          {/* 3. Action Catat (+ Button) */}
           <div
             ref={(el) => {
               slotRefs.current[2] = el;
@@ -450,10 +420,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                   ? "scale-110 ring-2 ring-white"
                   : ""
               }`}
-              aria-label="Catat Transaksi Baru"
-              title="Catat Transaksi Baru"
             >
-              {/* Liquid Specular Glare Highlight */}
               <div
                 className="absolute inset-0 rounded-[16px] pointer-events-none"
                 style={{
@@ -465,9 +432,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             </button>
           </div>
 
-          {/* ------------------------------------------------------------- */}
-          {/* 4. Laporan & Analitik */}
-          {/* ------------------------------------------------------------- */}
+          {/* 4. Analitik */}
           <button
             ref={(el) => {
               slotRefs.current[3] = el;
@@ -479,8 +444,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 ? "text-stone-950 dark:text-white font-bold scale-105"
                 : "text-stone-500/80 dark:text-stone-400/80 hover:text-stone-950 dark:hover:text-white"
             }`}
-            aria-label="Laporan Analitik"
-            title="Laporan Analitik"
           >
             <BarChart2
               className="w-5 h-5 transition-transform duration-200"
@@ -493,9 +456,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             )}
           </button>
 
-          {/* ------------------------------------------------------------- */}
-          {/* 5. Menu & Profil (Avatar Instagram Style) */}
-          {/* ------------------------------------------------------------- */}
+          {/* 5. Menu Lain / Avatar */}
           <button
             ref={(el) => {
               slotRefs.current[4] = el;
@@ -507,8 +468,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 ? "text-stone-950 dark:text-white font-bold scale-105"
                 : "text-stone-500/80 dark:text-stone-400/80 hover:text-stone-950 dark:hover:text-white"
             }`}
-            aria-label="Menu Fitur & Profil Pengguna"
-            title="Menu Fitur & Profil Pengguna"
           >
             {showAvatar && user?.avatarUrl ? (
               <div
@@ -531,10 +490,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 strokeWidth={effectiveHighlightSlot === 4 ? 2.6 : 2}
               />
             )}
-
             {showLabels && (
               <span className="text-[10px] font-semibold tracking-tight mt-0.5 leading-tight">
-                Profil
+                Menu
               </span>
             )}
           </button>
