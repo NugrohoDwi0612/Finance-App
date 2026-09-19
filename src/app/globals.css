@@ -7,27 +7,28 @@
 @layer base {
   :root {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    /* Safe area CSS variables - set once, use everywhere */
     --sat: env(safe-area-inset-top, 0px);
     --sab: env(safe-area-inset-bottom, 0px);
     --sal: env(safe-area-inset-left, 0px);
     --sar: env(safe-area-inset-right, 0px);
   }
+}
 
-  /* Safe area helpers khusus iPhone / Android PWA */
-  .pt-safe {
-    padding-top: max(0.75rem, env(safe-area-inset-top));
-  }
-  .pb-safe {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  }
-  .pb-safe-nav {
-    /* 5.5rem = BottomNav height ~56px + gap. calc adds safe area on top of that. */
-    padding-bottom: max(5.5rem, calc(4.5rem + env(safe-area-inset-bottom)));
-  }
-  /* Untuk posisi bottom BottomNav floating (fixed, jadi relatif ke viewport) */
-  .bottom-safe-nav {
-    bottom: max(0.65rem, env(safe-area-inset-bottom));
-  }
+/* Tailwind v4 @utility - proper way to define custom utilities */
+@utility pt-safe {
+  padding-top: max(0.75rem, var(--sat));
+}
+@utility pb-safe {
+  padding-bottom: max(1rem, var(--sab));
+}
+@utility pb-safe-nav {
+  /* BottomNav height ~56px + gap. Handles home indicator on iPhone */
+  padding-bottom: max(5.5rem, calc(4.5rem + var(--sab)));
+}
+@utility bottom-safe-nav {
+  /* For fixed BottomNav - position above iPhone home indicator */
+  bottom: max(0.65rem, var(--sab));
 }
 
 /* Custom scrollbar minimalis */
