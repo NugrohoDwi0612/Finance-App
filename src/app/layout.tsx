@@ -7,15 +7,16 @@ const inter = Inter({ subsets: ["latin"] });
 
 // Penyesuaian Viewport untuk PWA (Support Notch iPhone & Android)
 export const viewport: Viewport = {
+  // KUNCI PERBAIKAN: Gunakan #09090b yang sama persis dengan warna bg-stone-950 Tailwind
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f5f4" },
-    { media: "(prefers-color-scheme: dark)", color: "#0c0a09" },
+    { media: "(prefers-color-scheme: light)", color: "#fafaf9" }, // stone-50
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" }, // stone-950
   ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover", // Wajib cover agar mengisi layar penuh
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -24,11 +25,12 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default", // Ubah ke default agar tidak menabrak status bar hitam di iOS
+    // KUNCI PERBAIKAN: "black-translucent" memaksa konten tembus pandang ke ujung poni
+    statusBarStyle: "black-translucent",
     title: "CatatUang",
   },
   formatDetection: {
-    telephone: false, // Mencegah angka di struk berubah jadi link telepon biru di Safari
+    telephone: false,
   },
 };
 
@@ -40,11 +42,10 @@ export default function RootLayout({
   return (
     <html lang="id" className="dark" suppressHydrationWarning>
       <body
-        className={`${inter.className} bg-stone-200 dark:bg-stone-950 text-stone-900 dark:text-stone-100 antialiased overflow-hidden overscroll-none`}
+        className={`${inter.className} bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 antialiased overflow-hidden overscroll-none`}
         suppressHydrationWarning
       >
-        {/* Kontainer utama menggunakan fixed inset-0 agar 100% terkunci di layar */}
-        <div className="mx-auto fixed inset-0 max-w-md flex flex-col bg-stone-50 dark:bg-stone-900 shadow-2xl overflow-hidden">
+        <div className="mx-auto fixed inset-0 max-w-md flex flex-col bg-stone-50 dark:bg-stone-950 shadow-2xl overflow-hidden transition-colors duration-300">
           <Toaster
             position="top-center"
             richColors
