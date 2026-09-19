@@ -33,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 leading-none">
               <span className="font-black text-[15px] tracking-tight text-stone-900 dark:text-stone-100">
-                CatatUang
+                Finance App
               </span>
               <Badge
                 variant="outline"

@@ -15,13 +15,17 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "CatatUang - Manajemen Keuangan",
+  title: "Finance App - Manajemen Keuangan",
   description: "Kelola keuangan pribadi dengan mudah dan cerdas",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icons/icon-192x192.jpg",
+    apple: "/icons/apple-touch-icon.jpg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default", // Wajib "default" agar teks jam otomatis jadi HITAM saat layar putih!
-    title: "CatatUang",
+    title: "Finance App",
   },
   formatDetection: {
     telephone: false,
