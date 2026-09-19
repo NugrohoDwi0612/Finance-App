@@ -6,10 +6,7 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafaf9" },
-    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
-  ],
+  themeColor: "#09090b",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -18,14 +15,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Finance App - Manajemen Keuangan",
+  title: "CatatUang - Manajemen Keuangan",
   description: "Kelola keuangan pribadi dengan mudah dan cerdas",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    // KUNCI: Ubah ke "default" agar teks jam otomatis Hitam di mode Terang, Putih di mode Gelap!
-    statusBarStyle: "default",
-    title: "Finance App",
+    statusBarStyle: "default", // Wajib "default" agar teks jam otomatis jadi HITAM saat layar putih!
+    title: "CatatUang",
   },
   formatDetection: {
     telephone: false,
