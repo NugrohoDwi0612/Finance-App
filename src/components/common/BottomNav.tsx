@@ -278,7 +278,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       className={`fixed left-0 right-0 z-40 pointer-events-none flex justify-center transition-all duration-300 ${
         isDocked
           ? "bottom-0 px-0"
-          : "bottom-[max(0.65rem,env(safe-area-inset-bottom))] px-3.5 sm:px-4"
+          : "bottom-safe-nav px-3.5 sm:px-4"
       }`}
     >
       <nav

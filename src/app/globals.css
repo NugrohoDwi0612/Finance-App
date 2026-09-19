@@ -15,13 +15,18 @@
 
   /* Safe area helpers khusus iPhone / Android PWA */
   .pt-safe {
-    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-top: max(0.75rem, env(safe-area-inset-top));
   }
   .pb-safe {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
   .pb-safe-nav {
+    /* 5.5rem = BottomNav height ~56px + gap. calc adds safe area on top of that. */
     padding-bottom: max(5.5rem, calc(4.5rem + env(safe-area-inset-bottom)));
+  }
+  /* Untuk posisi bottom BottomNav floating (fixed, jadi relatif ke viewport) */
+  .bottom-safe-nav {
+    bottom: max(0.65rem, env(safe-area-inset-bottom));
   }
 }
 
