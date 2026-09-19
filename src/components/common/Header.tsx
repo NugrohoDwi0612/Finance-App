@@ -23,7 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
   const initialLetter = displayName.charAt(0).toUpperCase() || "U";
 
   return (
-    <header className="sticky top-0 z-30 bg-stone-50/90 dark:bg-stone-950/95 backdrop-blur-3xl border-b border-stone-200/80 dark:border-stone-800/80 px-3.5 pb-2.5 pt-safe transition-colors duration-300">
+    <header className="sticky top-0 z-30 bg-stone-50/90 dark:bg-stone-950/95 backdrop-blur-3xl border-b border-stone-200/80 dark:border-stone-800/80 px-3.5 py-2.5 transition-colors duration-300">
       <div className="w-full flex items-center justify-between gap-2">
         {/* Brand Logo & Sapaan Pengguna (Kiri) */}
         <div className="flex items-center gap-2.5 min-w-0">

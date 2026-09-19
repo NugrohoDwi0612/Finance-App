@@ -45,7 +45,15 @@ export default function RootLayout({
         className={`${inter.className} bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 antialiased overflow-hidden overscroll-none`}
         suppressHydrationWarning
       >
-        <div className="mx-auto fixed inset-0 max-w-md flex flex-col bg-stone-50 dark:bg-stone-950 shadow-2xl overflow-hidden transition-colors duration-300">
+        <div
+          className="mx-auto fixed max-w-md w-full flex flex-col bg-stone-50 dark:bg-stone-950 shadow-2xl overflow-hidden transition-colors duration-300"
+          style={{
+            top: "env(safe-area-inset-top, 0px)",
+            bottom: 0,
+            left: "env(safe-area-inset-left, 0px)",
+            right: "env(safe-area-inset-right, 0px)",
+          }}
+        >
           <Toaster
             position="top-center"
             richColors
