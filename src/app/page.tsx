@@ -1,69 +1,191 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, useEffect } from "react"; // <-- Ditambahkan useEffect
+import { AppProvider, useApp } from "@/context/AppContext";
+import { Header } from "@/components/common/Header";
+import { BottomNav } from "@/components/common/BottomNav";
+import { AppLockModal } from "@/components/common/AppLockModal";
+import { OfflineIndicator } from "@/components/common/OfflineIndicator";
+import { PWAInstallBanner } from "@/components/common/PWAInstallBanner";
+
+// Views
+import { DashboardView } from "@/components/dashboard/DashboardView";
+import { TransactionListView } from "@/components/transactions/TransactionListView";
+import { TransactionModal } from "@/components/transactions/TransactionModal";
+import { WalletsView } from "@/components/wallets/WalletsView";
+import { CategoriesView } from "@/components/categories/CategoriesView";
+import { BudgetsAndGoalsView } from "@/components/budgets/BudgetsAndGoalsView";
+import { DebtsLoansView } from "@/components/debts/DebtsLoansView";
+import { RecurringBillsView } from "@/components/recurring/RecurringBillsView";
+import { AnalyticsView } from "@/components/analytics/AnalyticsView";
+import { SmartToolsView } from "@/components/smart/SmartToolsView";
+import { ProfileSettingsView } from "@/components/profile/ProfileSettingsView";
+import { MoreMenuView } from "@/components/more/MoreMenuView";
+import { WelcomeAuthScreen } from "@/components/auth/WelcomeAuthScreen";
+import { ArrowLeft, Wallet as WalletSplash } from "lucide-react";
+
+import { Transaction } from "@/types";
+import { ParsedReceiptData } from "@/utils/ocrScanner";
+
+const MainAppContent: React.FC = () => {
+  const { currentTab, setCurrentTab, colorPreset, user } = useApp();
+
+  // Transaction Modal State
+  const [isTxModalOpen, setIsTxModalOpen] = useState(false);
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [scannedReceiptData, setScannedReceiptData] =
+    useState<ParsedReceiptData | null>(null);
+
+  // Jika user belum login / belum onboarding -> Tampilkan Welcome Screen
+  if (!user.isLoggedIn || user.isOnboarded === false) {
+    return <WelcomeAuthScreen />;
+  }
+
+  const handleOpenAddTransaction = () => {
+    setSelectedTx(null);
+    setScannedReceiptData(null);
+    setIsTxModalOpen(true);
+  };
+
+  const handleSelectTransaction = (tx: Transaction) => {
+    setSelectedTx(tx);
+    setScannedReceiptData(null);
+    setIsTxModalOpen(true);
+  };
+
+  const handleScanComplete = (data: ParsedReceiptData) => {
+    setSelectedTx(null);
+    setScannedReceiptData(data);
+    setIsTxModalOpen(true);
+  };
+
+  const isSubView = [
+    "wallets",
+    "categories",
+    "debts",
+    "recurring",
+    "smart",
+    "profile",
+    "budgets",
+  ].includes(currentTab);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="h-full w-full flex flex-col justify-between overflow-hidden relative">
+      {/* App Lock Screen (PIN & Biometric) */}
+      <AppLockModal />
+
+      {/* Offline Toast Banner */}
+      <OfflineIndicator />
+
+      {/* Application Mobile Header */}
+      <Header onOpenSettings={() => setCurrentTab("profile")} />
+
+      {/* Main Scrollable Content */}
+      <main className="flex-1 w-full px-3.5 pt-3 pb-32 overflow-y-auto overscroll-contain scrollbar-none">
+        {isSubView && (
+          <div className="mb-3 flex items-center justify-between">
+            <button
+              onClick={() => setCurrentTab("more")}
+              style={{ color: colorPreset.primaryHex }}
+              className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full bg-stone-200/70 dark:bg-stone-800/70 text-xs font-bold hover:bg-stone-200 dark:hover:bg-stone-800 active:scale-95 transition"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Menu Lainnya</span>
+            </button>
+          </div>
+        )}
+
+        {currentTab === "dashboard" && (
+          <DashboardView
+            onNavigateToTransactions={() => setCurrentTab("transactions")}
+            onNavigateToWallets={() => setCurrentTab("wallets")}
+            onNavigateToBudgets={() => setCurrentTab("budgets")}
+            onOpenAddTransaction={handleOpenAddTransaction}
+            onSelectTransaction={handleSelectTransaction}
+            onOpenSmartScan={() => setCurrentTab("smart")}
+          />
+        )}
+
+        {currentTab === "transactions" && (
+          <TransactionListView
+            onOpenAddTransaction={handleOpenAddTransaction}
+            onSelectTransaction={handleSelectTransaction}
+          />
+        )}
+
+        {currentTab === "wallets" && <WalletsView />}
+        {currentTab === "categories" && <CategoriesView />}
+        {currentTab === "budgets" && <BudgetsAndGoalsView />}
+        {currentTab === "debts" && <DebtsLoansView />}
+        {currentTab === "recurring" && <RecurringBillsView />}
+        {currentTab === "analytics" && <AnalyticsView />}
+        {currentTab === "smart" && (
+          <SmartToolsView onScanComplete={handleScanComplete} />
+        )}
+        {currentTab === "profile" && <ProfileSettingsView />}
+        {currentTab === "more" && <MoreMenuView />}
       </main>
+
+      {/* PWA Install Banner */}
+      <PWAInstallBanner />
+
+      {/* Floating Bottom Navigation Dock */}
+      <BottomNav
+        currentTab={currentTab}
+        onSelectTab={(tab) => setCurrentTab(tab)}
+        onOpenAddTransaction={handleOpenAddTransaction}
+      />
+
+      {/* Transaction Entry & Edit Modal */}
+      <TransactionModal
+        isOpen={isTxModalOpen}
+        onClose={() => {
+          setIsTxModalOpen(false);
+          setSelectedTx(null);
+          setScannedReceiptData(null);
+        }}
+        initialTransaction={selectedTx}
+        initialScanData={
+          scannedReceiptData
+            ? {
+                merchantName: scannedReceiptData.merchantName,
+                totalAmount: scannedReceiptData.totalAmount,
+                date: scannedReceiptData.date,
+              }
+            : null
+        }
+      />
     </div>
+  );
+};
+
+// =========================================================================
+// HYDRATION GUARD: Menghindari bentrok Server vs Browser (LocalStorage)
+// =========================================================================
+export default function App() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Selama render awal di server/SSR, tampilkan Splash Screen serasi
+  if (!isMounted) {
+    return (
+      <div className="h-[100dvh] w-full bg-stone-950 flex flex-col items-center justify-center text-white">
+        <div className="w-16 h-16 rounded-3xl bg-teal-500/20 text-teal-400 flex items-center justify-center animate-pulse mb-3">
+          <WalletSplash size={32} />
+        </div>
+        <p className="text-xs font-bold text-stone-400 tracking-wider uppercase animate-pulse">
+          Memuat CatatUang...
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <AppProvider>
+      <MainAppContent />
+    </AppProvider>
   );
 }
