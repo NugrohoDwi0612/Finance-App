@@ -81,6 +81,9 @@ export const ProfileSettingsView: React.FC = () => {
   const [confirmPin, setConfirmPin] = useState("");
   const [pinError, setPinError] = useState("");
 
+  // Logout Confirmation Modal state
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
   // Backup / Import file ref
   const importFileRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -199,6 +202,11 @@ export const ProfileSettingsView: React.FC = () => {
       resetAllData();
       alert("Aplikasi telah diatur ulang ke kondisi awal.");
     }
+  };
+
+  const handleConfirmLogout = () => {
+    setIsLogoutModalOpen(false);
+    logoutUser();
   };
 
   return (
@@ -514,7 +522,6 @@ export const ProfileSettingsView: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    {/* Color Swatch Circle with Gradient */}
                     <div
                       className="w-8 h-8 rounded-xl shadow-xs flex items-center justify-center shrink-0 border border-white/20"
                       style={{
@@ -543,7 +550,6 @@ export const ProfileSettingsView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Micro color preview dots */}
                   <div className="flex items-center gap-1 shrink-0">
                     <span
                       className="w-2.5 h-2.5 rounded-full"
@@ -582,9 +588,8 @@ export const ProfileSettingsView: React.FC = () => {
           </span>
         </div>
 
-        {/* Live Interactive Preview Box with vibrant background */}
+        {/* Live Interactive Preview Box */}
         <div className="relative rounded-2xl p-4 overflow-hidden border border-stone-200 dark:border-stone-800 shadow-inner">
-          {/* Background colorful elements simulating page content */}
           <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 via-teal-500/25 to-indigo-600/30 dark:from-amber-600/25 dark:via-teal-600/30 dark:to-indigo-700/35" />
           <div className="absolute -top-6 -left-6 w-24 h-24 rounded-full bg-teal-400/40 blur-xl" />
           <div className="absolute -bottom-6 -right-6 w-28 h-28 rounded-full bg-indigo-400/40 blur-xl" />
@@ -599,7 +604,6 @@ export const ProfileSettingsView: React.FC = () => {
             </div>
           </div>
 
-          {/* Floating mini glass pill preview */}
           <div className="relative z-10 flex flex-col items-center">
             <p className="text-[10px] font-bold text-stone-700 dark:text-stone-300 mb-2">
               Pratinjau Kaca Transparan & Kaca Oval Geser:
@@ -617,7 +621,6 @@ export const ProfileSettingsView: React.FC = () => {
               }}
               className="w-full max-w-[290px] rounded-[24px] py-1.5 px-2 flex items-center justify-between border shadow-lg backdrop-blur-2xl transition-all duration-200 relative isolate"
             >
-              {/* Active Oval Glass Lens Highlight simulation */}
               <div
                 style={{
                   backgroundColor:
@@ -705,7 +708,6 @@ export const ProfileSettingsView: React.FC = () => {
             <span>100% (Solid Pekat)</span>
           </div>
 
-          {/* Quick Presets */}
           <div className="grid grid-cols-4 gap-1.5 pt-1">
             {[
               { label: "Bening", value: 15, hint: "Transparan" },
@@ -919,23 +921,56 @@ export const ProfileSettingsView: React.FC = () => {
           <span>Atur Ulang ke Pengaturan Awal (Factory Reset)</span>
         </Button>
 
+        {/* Tombol Keluar Akun -> Membuka Popup Dialog Konfirmasi */}
         <Button
           variant="secondary"
-          onClick={() => {
-            if (
-              confirm(
-                "Keluar dari sesi akun Anda dan kembali ke layar Selamat Datang?",
-              )
-            ) {
-              logoutUser();
-            }
-          }}
-          className="w-full font-bold text-xs flex items-center justify-center gap-1.5"
+          onClick={() => setIsLogoutModalOpen(true)}
+          className="w-full font-bold text-xs flex items-center justify-center gap-1.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
         >
           <LogOut className="w-4 h-4" />
           <span>Keluar Akun (Kembali ke Layar Pertama)</span>
         </Button>
       </Card>
+
+      {/* MODAL KONFIRMASI KELUAR AKUN */}
+      <Dialog open={isLogoutModalOpen} onOpenChange={setIsLogoutModalOpen}>
+        <DialogContent className="max-w-xs sm:max-w-sm rounded-3xl p-6 text-center">
+          <div className="flex flex-col items-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center">
+              <LogOut className="w-6 h-6" />
+            </div>
+
+            <DialogHeader>
+              <DialogTitle className="text-center text-base font-extrabold text-stone-900 dark:text-stone-100">
+                Konfirmasi Keluar
+              </DialogTitle>
+            </DialogHeader>
+
+            <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+              Apakah Anda yakin ingin keluar dari akun ini? Anda akan kembali ke
+              layar Selamat Datang.
+            </p>
+          </div>
+
+          <div className="flex gap-2.5 pt-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsLogoutModalOpen(false)}
+              className="flex-1 rounded-xl text-xs font-semibold"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmLogout}
+              className="flex-1 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs"
+            >
+              Ya, Keluar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* PIN Setup Modal with shadcn Dialog */}
       <Dialog open={isPinModalOpen} onOpenChange={setIsPinModalOpen}>
