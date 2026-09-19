@@ -5,12 +5,10 @@ import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// Penyesuaian Viewport untuk PWA (Support Notch iPhone & Android)
 export const viewport: Viewport = {
-  // KUNCI PERBAIKAN: Gunakan #09090b yang sama persis dengan warna bg-stone-950 Tailwind
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafaf9" }, // stone-50
-    { media: "(prefers-color-scheme: dark)", color: "#09090b" }, // stone-950
+    { media: "(prefers-color-scheme: light)", color: "#fafaf9" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -25,8 +23,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    // KUNCI PERBAIKAN: "black-translucent" memaksa konten tembus pandang ke ujung poni
-    statusBarStyle: "black-translucent",
+    // KUNCI: Ubah ke "default" agar teks jam otomatis Hitam di mode Terang, Putih di mode Gelap!
+    statusBarStyle: "default",
     title: "Finance App",
   },
   formatDetection: {
@@ -42,12 +40,10 @@ export default function RootLayout({
   return (
     <html lang="id" className="dark" suppressHydrationWarning>
       <body
-        className={`${inter.className} bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 antialiased overflow-hidden overscroll-none`}
+        className={`${inter.className} bg-stone-100 dark:bg-stone-950 text-stone-900 dark:text-stone-100 antialiased overflow-hidden overscroll-none`}
         suppressHydrationWarning
       >
-        <div
-          className="mx-auto fixed inset-0 max-w-md flex flex-col bg-stone-50 dark:bg-stone-950 shadow-2xl overflow-hidden transition-colors duration-300"
-        >
+        <div className="mx-auto fixed inset-0 max-w-md flex flex-col bg-stone-50 dark:bg-stone-950 shadow-2xl overflow-hidden transition-colors duration-300">
           <Toaster
             position="top-center"
             richColors

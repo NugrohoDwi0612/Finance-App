@@ -81,7 +81,7 @@ const MainAppContent: React.FC = () => {
       <Header onOpenSettings={() => setCurrentTab("profile")} />
 
       {/* Main Scrollable Content */}
-      <main className="flex-1 w-full px-3.5 pt-3 pb-safe-nav overflow-y-auto overscroll-contain scrollbar-none relative z-0">
+      <main className="flex-1 w-full px-3.5 pt-2 pb-32 overflow-y-auto overscroll-contain scrollbar-none relative z-0">
         {isSubView && (
           <div className="mb-3 flex items-center justify-between">
             <button
