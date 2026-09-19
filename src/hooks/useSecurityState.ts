@@ -45,36 +45,34 @@ export function useSecurityState() {
   useEffect(() => { localStorage.setItem("catatuang_navSettings", JSON.stringify(navSettings)); }, [navSettings]);
 
   // Handle Theme
-   useEffect(() => {
+    useEffect(() => {
     const root = document.documentElement;
 
     const applyTheme = (isDark: boolean) => {
       const targetColor = isDark ? "#09090b" : "#fafaf9";
 
-      // 1. Ubah class CSS Tailwind & paksa warna latar paling belakang
+      // 1. Ubah class CSS Tailwind
       if (isDark) {
         root.classList.add("dark");
       } else {
         root.classList.remove("dark");
       }
+
+      // 2. Kunci warna background fisik paling dasar
       root.style.backgroundColor = targetColor;
       if (document.body) {
         document.body.style.backgroundColor = targetColor;
       }
 
-      // 2. PAKSA UPDATE SEMUA META TAG THEME-COLOR DI BROWSER
-      const metaTags = document.querySelectorAll('meta[name="theme-color"]');
-      if (metaTags.length > 0) {
-        metaTags.forEach((tag) => {
-          tag.removeAttribute("media"); // HAPUS kuncian Dark Mode bawaan HP!
-          tag.setAttribute("content", targetColor);
-        });
-      } else {
-        const meta = document.createElement("meta");
-        meta.name = "theme-color";
-        meta.content = targetColor;
-        document.head.appendChild(meta);
-      }
+      // 3. KUNCI PERBAIKAN: HAPUS TOTAL SEMUA META THEME-COLOR LAMA DARI DOM
+      const existingMetas = document.querySelectorAll('meta[name="theme-color"]');
+      existingMetas.forEach((meta) => meta.remove());
+
+      // 4. BUAT ELEMEN META BARU DARI NOL (Memaksa iOS me-repaint status bar detik itu juga)
+      const freshMeta = document.createElement("meta");
+      freshMeta.name = "theme-color";
+      freshMeta.content = targetColor;
+      document.head.appendChild(freshMeta);
     };
 
     if (theme === "system") {
