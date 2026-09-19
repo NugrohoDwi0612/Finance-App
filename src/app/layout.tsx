@@ -42,23 +42,10 @@ export default function RootLayout({
   return (
     <html lang="id" className="dark" suppressHydrationWarning>
       <body
-        className={`${inter.className} bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 antialiased overscroll-none`}
-        style={{
-          paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "env(safe-area-inset-bottom)",
-          paddingLeft: "env(safe-area-inset-left)",
-          paddingRight: "env(safe-area-inset-right)",
-        }}
+        className={`${inter.className} bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 antialiased overflow-hidden overscroll-none`}
         suppressHydrationWarning
       >
-        <div className="mx-auto fixed max-w-md flex flex-col bg-stone-50 dark:bg-stone-950 shadow-2xl overflow-hidden transition-colors duration-300"
-          style={{
-            top: "env(safe-area-inset-top)",
-            bottom: "env(safe-area-inset-bottom)",
-            left: "env(safe-area-inset-left)",
-            right: "env(safe-area-inset-right)",
-          }}
-        >
+        <div className="mx-auto fixed inset-0 max-w-md flex flex-col bg-stone-50 dark:bg-stone-950 shadow-2xl overflow-hidden transition-colors duration-300">
           <Toaster
             position="top-center"
             richColors

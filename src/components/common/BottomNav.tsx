@@ -278,7 +278,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       className={`fixed left-0 right-0 z-40 pointer-events-none flex justify-center transition-all duration-300 ${
         isDocked
           ? "bottom-0 px-0"
-          : "bottom-2.5 px-3.5 sm:px-4"
+          : "bottom-[max(0.65rem,env(safe-area-inset-bottom))] px-3.5 sm:px-4"
       }`}
     >
       <nav
@@ -297,7 +297,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         }}
         className={`pointer-events-auto relative transition-all duration-300 isolate flex flex-col justify-center shadow-2xl touch-none select-none ${blurClasses} ${
           isDocked
-            ? "w-full max-w-md border-t border-b-0 border-x-0 sm:border-x border-stone-200/50 dark:border-stone-800/60 px-3 pt-1.5 pb-3 bg-opacity-90"
+            ? "w-full max-w-md border-t border-b-0 border-x-0 sm:border-x border-stone-200/50 dark:border-stone-800/60 px-3 pt-1.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] bg-opacity-90"
             : "w-full max-w-[390px] rounded-[32px] border px-2.5 py-1.5 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.18),0_24px_50px_-12px_rgba(0,0,0,0.14),inset_0_1px_1.5px_0_rgba(255,255,255,0.75),inset_0_-1px_2px_0_rgba(0,0,0,0.06)] dark:shadow-[0_20px_48px_-8px_rgba(0,0,0,0.7),0_10px_24px_rgba(0,0,0,0.5),inset_0_1px_1.5px_0_rgba(255,255,255,0.22),inset_0_-1px_1.5px_0_rgba(0,0,0,0.4)]"
         }`}
       >
