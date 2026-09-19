@@ -25,7 +25,6 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-30 bg-stone-50/90 dark:bg-stone-950/95 backdrop-blur-3xl border-b border-stone-200/80 dark:border-stone-800/80 px-3.5 pb-2.5 pt-[max(0.85rem,env(safe-area-inset-top))] transition-colors duration-300">
       <div className="w-full flex items-center justify-between gap-2">
-      <div className="w-full flex items-center justify-between gap-2">
         {/* Brand Logo & Sapaan Pengguna (Kiri) */}
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-2xl bg-stone-950 dark:bg-white text-white dark:text-stone-950 flex items-center justify-center font-black shadow-xs shrink-0 ring-1 ring-black/5 dark:ring-white/20">
