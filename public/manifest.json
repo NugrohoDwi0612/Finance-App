@@ -1,21 +1,25 @@
 {
-  "name": "Finance App",
-  "short_name": "Finance",
+  "name": "CatatUang Pro",
+  "short_name": "CatatUang",
   "description": "Aplikasi Manajemen Keuangan Pribadi",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
-  "background_color": "#09090b",
-  "theme_color": "#09090b",
+  "orientation": "portrait",
+  "background_color": "#0c0a09",
+  "theme_color": "#0c0a09",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
