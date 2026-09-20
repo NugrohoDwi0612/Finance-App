@@ -90,11 +90,8 @@ export function useTransactionState(
 
   const currentMonthCashflow = useMemo(() => {
     return currentMonthIncome - currentMonthExpense;
-  }, [currentMonthIncome, 
-
-      // =========================================================================
-  // TAMBAH TRANSAKSI CEPAT (PARALEL PROMISE.ALL)
-  // =========================================================================
+  }, [
+    
   const addTransaction = async (txData: Omit<Transaction, "id" | "createdAt">) => {
     const id = `tx-${Date.now()}`;
     const newTx: Transaction = {
