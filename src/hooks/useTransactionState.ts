@@ -90,10 +90,10 @@ export function useTransactionState(
 
   const currentMonthCashflow = useMemo(() => {
     return currentMonthIncome - currentMonthExpense;
-  }, [currentMonthIncome, currentMonthExpense]);
+  }, [currentMonthIncome, 
 
-  // =========================================================================
-  // 1. TAMBAH TRANSAKSI (POTONG SALDO DI HP & DATABASE SUPABASE)
+      // =========================================================================
+  // TAMBAH TRANSAKSI CEPAT (PARALEL PROMISE.ALL)
   // =========================================================================
   const addTransaction = async (txData: Omit<Transaction, "id" | "createdAt">) => {
     const id = `tx-${Date.now()}`;
@@ -106,7 +106,7 @@ export function useTransactionState(
     let updatedSourceWallet: Wallet | undefined;
     let updatedTargetWallet: Wallet | undefined;
 
-    // A. Potong / Tambah Saldo di Layar HP Seketika (Optimistic UI)
+    // 1. Tampilkan di layar HP seketika
     setWallets((prev) =>
       prev.map((w) => {
         if (newTx.type === "expense" && w.id === newTx.walletId) {
@@ -137,18 +137,19 @@ export function useTransactionState(
 
     setTransactions((prev) => [newTx, ...prev]);
 
-    // B. Simpan Transaksi & Kunci Saldo Baru di Cloud Supabase Secara Permanen
+    // 2. KUNCI KECEPATAN: Jalankan Simpan Transaksi & Potong Saldo secara PARALEL!
     if (user.isLoggedIn && user.email !== "guest@catatuang.app") {
-      await addTransactionDB(newTx);
+      const tasks: Promise<any>[] = [addTransactionDB(newTx)];
 
-      // Simpan saldo dompet asal ke Supabase
       if (updatedSourceWallet) {
-        await reconcileWalletBalanceDB(updatedSourceWallet.id, updatedSourceWallet.balance);
+        tasks.push(reconcileWalletBalanceDB(updatedSourceWallet.id, updatedSourceWallet.balance));
       }
-      // Simpan saldo dompet tujuan ke Supabase (jika transfer)
       if (updatedTargetWallet) {
-        await reconcileWalletBalanceDB(updatedTargetWallet.id, updatedTargetWallet.balance);
+        tasks.push(reconcileWalletBalanceDB(updatedTargetWallet.id, updatedTargetWallet.balance));
       }
+
+      // Eksekusi serentak dalam satu waktu
+      await Promise.all(tasks);
     }
   };
 
