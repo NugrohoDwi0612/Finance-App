@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/utils/supabase";
 import { syncAllUserDataDB } from "@/services/syncService";
-import { UserProfile } from "@/types";
+import { UserProfile, Transaction } from "@/types";
 
 interface UseSupabaseRealtimeProps {
   user: UserProfile;
   setWallets: Function;
   setCategories: Function;
-  setTransactions: Function;
+  setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
   setBudgets: Function;
   setGoals: Function;
   setDebtsLoans: Function;
@@ -28,63 +28,73 @@ export function useSupabaseRealtime({
   setRecurringBills,
   setSplitBills,
 }: UseSupabaseRealtimeProps) {
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     // Abaikan tamu demo atau jika belum login
     if (!user.isLoggedIn || user.email === "guest@catatuang.app") return;
 
-    let isSyncing = false;
-
-    // Fungsi debounce sederhana: mencegah penarikan data beruntun jika 1 aksi memicu banyak tabel
     const handleRemoteChange = async (payload: any) => {
-      // Abaikan jika payload error
       if (payload.errors) return;
 
-      if (!isSyncing) {
-        isSyncing = true;
-        
-        // Sengaja diberi jeda 300ms agar database Supabase selesai memproses transaksi
-        setTimeout(async () => {
-          const data = await syncAllUserDataDB();
-          if (data) {
-            setWallets(data.wallets || []);
-            setCategories(data.categories || []);
-            setTransactions(data.transactions || []);
-            setBudgets(data.budgets || []);
-            setGoals(data.goals || []);
-            setDebtsLoans(data.debtsLoans || []);
-            setRecurringBills(data.recurringBills || []);
-            setSplitBills(data.splitBills || []);
-          }
-          isSyncing = false;
-        }, 300);
+      // 1. Batalkan antrean sinkronisasi sebelumnya jika ada event beruntun (Debounce)
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
       }
+
+      // 2. Beri jeda 1 detik agar Supabase benar-benar selesai menyimpan data ke database
+      timerRef.current = setTimeout(async () => {
+        const data = await syncAllUserDataDB();
+        if (data) {
+          setWallets(data.wallets || []);
+          setCategories(data.categories || []);
+          setBudgets(data.budgets || []);
+          setGoals(data.goals || []);
+          setDebtsLoans(data.debtsLoans || []);
+          setRecurringBills(data.recurringBills || []);
+          setSplitBills(data.splitBills || []);
+
+          // =====================================================================
+          // 3. KUNCI PERBAIKAN: SMART MERGE (Mencegah Transaksi Baru Hilang!)
+          // =====================================================================
+          setTransactions((prev) => {
+            const incoming = data.transactions || [];
+            const incomingIds = new Set(incoming.map((t) => t.id));
+
+            // Pertahankan transaksi yang baru dicatat di HP dalam 15 detik terakhir
+            // agar tidak terhapus jika koneksi Supabase sedikit terlambat merespon
+            const recentLocals = prev.filter((localTx) => {
+              const txTime = new Date(localTx.createdAt || Date.now()).getTime();
+              const isRecent = Date.now() - txTime < 15000; // 15 detik
+              return isRecent && !incomingIds.has(localTx.id);
+            });
+
+            return [...recentLocals, ...incoming];
+          });
+        }
+      }, 1000); // Jeda 1 detik yang aman
     };
 
-    // Saluran komunikasi khusus untuk pengguna ini (berdasarkan UID)
     const channelName = `user_data_sync_${user.email}`;
 
     // Membuka koneksi WebSockets ke Supabase
     const channel = supabase
       .channel(channelName)
-      // MENDENGARKAN EVENT TRANSAKSI
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "transactions" },
         handleRemoteChange
       )
-      // MENDENGARKAN EVENT DOMPET
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "wallets" },
         handleRemoteChange
       )
-      // MENDENGARKAN EVENT KATEGORI
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "categories" },
         handleRemoteChange
       )
-      // MENDENGARKAN EVENT GOALS & BUDGETS
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "goals" },
@@ -95,7 +105,6 @@ export function useSupabaseRealtime({
         { event: "*", schema: "public", table: "budgets" },
         handleRemoteChange
       )
-      // MENDENGARKAN EVENT HUTANG & TAGIHAN
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "debts_loans" },
@@ -110,7 +119,8 @@ export function useSupabaseRealtime({
       });
 
     return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
       supabase.removeChannel(channel);
     };
-  }, [user.isLoggedIn, user.email]); 
+  }, [user.isLoggedIn, user.email]);
 }
