@@ -88,10 +88,14 @@ export function useTransactionState(
       .reduce((acc, tx) => acc + tx.amount, 0);
   }, [currentMonthTransactions]);
 
+  // KUNCI PERBAIKAN: Kurung useMemo ditutup dengan benar
   const currentMonthCashflow = useMemo(() => {
     return currentMonthIncome - currentMonthExpense;
-  }, [
-    
+  }, [currentMonthIncome, currentMonthExpense]);
+
+  // =========================================================================
+  // 1. TAMBAH TRANSAKSI CEPAT (PARALEL PROMISE.ALL)
+  // =========================================================================
   const addTransaction = async (txData: Omit<Transaction, "id" | "createdAt">) => {
     const id = `tx-${Date.now()}`;
     const newTx: Transaction = {
@@ -103,7 +107,7 @@ export function useTransactionState(
     let updatedSourceWallet: Wallet | undefined;
     let updatedTargetWallet: Wallet | undefined;
 
-    // 1. Tampilkan di layar HP seketika
+    // A. Tampilkan di layar HP seketika (Optimistic UI)
     setWallets((prev) =>
       prev.map((w) => {
         if (newTx.type === "expense" && w.id === newTx.walletId) {
@@ -134,7 +138,7 @@ export function useTransactionState(
 
     setTransactions((prev) => [newTx, ...prev]);
 
-    // 2. KUNCI KECEPATAN: Jalankan Simpan Transaksi & Potong Saldo secara PARALEL!
+    // B. Simpan ke Supabase secara Paralel Cepat
     if (user.isLoggedIn && user.email !== "guest@catatuang.app") {
       const tasks: Promise<any>[] = [addTransactionDB(newTx)];
 
@@ -145,7 +149,6 @@ export function useTransactionState(
         tasks.push(reconcileWalletBalanceDB(updatedTargetWallet.id, updatedTargetWallet.balance));
       }
 
-      // Eksekusi serentak dalam satu waktu
       await Promise.all(tasks);
     }
   };
@@ -173,7 +176,7 @@ export function useTransactionState(
   };
 
   // =========================================================================
-  // 3. HAPUS TRANSAKSI (KEMBALIKAN SALDO DI HP & DATABASE SUPABASE)
+  // 3. HAPUS TRANSAKSI (ROLLBACK SALDO DI HP & SUPABASE)
   // =========================================================================
   const deleteTransaction = async (id: string) => {
     const target = transactions.find((t) => t.id === id);
@@ -213,7 +216,7 @@ export function useTransactionState(
 
     setTransactions((prev) => prev.filter((t) => t.id !== id));
 
-    // B. Hapus Transaksi & Simpan Saldo yang Dipulihkan ke Cloud Supabase
+    // B. Hapus Transaksi & Simpan Saldo Kembali di Supabase
     if (user.isLoggedIn && user.email !== "guest@catatuang.app") {
       await deleteTransactionDB(id);
 
