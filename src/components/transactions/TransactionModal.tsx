@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner"; // <-- Notifikasi Toast
 import { useApp } from "@/context/AppContext";
 import { Transaction, TransactionType } from "@/types";
-import { formatMoneyInput, parseSmartMoneyInput } from "@/utils/formatters";
+import { formatRupiah, formatMoneyInput, parseSmartMoneyInput } from "@/utils/formatters";
 import { IconRenderer } from "@/components/common/IconRenderer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
