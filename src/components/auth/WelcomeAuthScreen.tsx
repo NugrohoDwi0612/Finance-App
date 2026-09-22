@@ -168,7 +168,7 @@ export const WelcomeAuthScreen: React.FC<WelcomeAuthScreenProps> = ({
       pinCode: enablePin && pinCode.length === 6 ? pinCode : undefined,
     });
     setCurrentTab("dashboard");
-    toast.success("Akun berhasil dibuat! Selamat datang di CatatUang.");
+    toast.success("Akun berhasil dibuat! Selamat datang di Flowita.");
 
     setIsLoading(false);
     if (onComplete) onComplete();
@@ -201,7 +201,7 @@ export const WelcomeAuthScreen: React.FC<WelcomeAuthScreenProps> = ({
           <div>
             <div className="flex items-center gap-1.5 leading-none">
               <span className="font-black text-base tracking-tight">
-                CatatUang
+                Flowita
               </span>
               <Badge
                 variant="outline"

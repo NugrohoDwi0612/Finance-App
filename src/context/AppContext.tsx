@@ -268,16 +268,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       version: "1.0.0",
       exportedAt: new Date().toISOString(),
     };
-    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data, null, 2))}`;
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
     const downloadAnchor = document.createElement("a");
-    downloadAnchor.setAttribute("href", jsonString);
-    downloadAnchor.setAttribute(
-      "download",
-      `CatatUang_Backup_${new Date().toISOString().slice(0, 10)}.json`,
-    );
-    document.body.appendChild(downloadAnchor);
+    downloadAnchor.href = url;
+    downloadAnchor.download = `CatatUang_Backup_${new Date().toISOString().slice(0, 10)}.json`;
     downloadAnchor.click();
-    downloadAnchor.remove();
+    // Revoke asynchronously to give the browser time to initiate the download
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
   const importDataJSON = (jsonStr: string): boolean => {

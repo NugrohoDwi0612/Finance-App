@@ -15,17 +15,17 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Finance App - Manajemen Keuangan",
+  title: "Flowita - Manajemen Keuangan Pribadi",
   description: "Kelola keuangan pribadi dengan mudah dan cerdas",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icons/icon-192x192.jpg",
-    apple: "/icons/apple-touch-icon.jpg",
+    icon: "/icons/icon_flowita.jpg",
+    apple: "/icons/icon_flowita.jpg",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default", // Wajib "default" agar teks jam otomatis jadi HITAM saat layar putih!
-    title: "Finance App",
+    title: "Flowita",
   },
   formatDetection: {
     telephone: false,

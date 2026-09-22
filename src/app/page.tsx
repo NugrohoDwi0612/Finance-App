@@ -177,7 +177,7 @@ export default function App() {
           <WalletSplash size={32} />
         </div>
         <p className="text-xs font-bold text-stone-400 tracking-wider uppercase animate-pulse">
-          Memuat CatatUang...
+          Memuat Flowita...
         </p>
       </div>
     );

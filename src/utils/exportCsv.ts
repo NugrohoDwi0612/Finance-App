@@ -13,7 +13,10 @@ export interface ExportOptions {
 /**
  * Helper pembersih karakter khusus CSV
  */
-const escapeCSV = (str: string | number | undefined | null, delimiter = ";") => {
+const escapeCSV = (
+  str: string | number | undefined | null,
+  delimiter = ";",
+) => {
   if (str === undefined || str === null) return '""';
   const s = String(str).replace(/"/g, '""');
   return `"${s}"`;
@@ -26,7 +29,7 @@ function downloadCSV(
   transactions: Transaction[],
   categories: Category[],
   wallets: Wallet[],
-  options: ExportOptions
+  options: ExportOptions,
 ) {
   const currency = options.currency || "IDR";
   const delimiter = options.delimiter || ";";
@@ -49,12 +52,29 @@ function downloadCSV(
 
   // Header Ringkasan Eksekutif di Atas CSV
   const metaHeader = [
-    [escapeCSV("LAPORAN ARUS KAS KEUANGAN — CATATUANG", delimiter)].join(delimiter),
-    [escapeCSV("Nama Pengguna:", delimiter), escapeCSV(options.userName || "Pengguna", delimiter)].join(delimiter),
-    [escapeCSV("Tanggal Ekspor:", delimiter), escapeCSV(new Date().toLocaleString("id-ID"), delimiter)].join(delimiter),
-    [escapeCSV("Total Pemasukan:", delimiter), escapeCSV(formatRupiah(totalIncome, false, currency), delimiter)].join(delimiter),
-    [escapeCSV("Total Pengeluaran:", delimiter), escapeCSV(formatRupiah(totalExpense, false, currency), delimiter)].join(delimiter),
-    [escapeCSV("Arus Kas Bersih:", delimiter), escapeCSV(formatRupiah(netCashflow, false, currency), delimiter)].join(delimiter),
+    [escapeCSV("LAPORAN ARUS KAS KEUANGAN — CATATUANG", delimiter)].join(
+      delimiter,
+    ),
+    [
+      escapeCSV("Nama Pengguna:", delimiter),
+      escapeCSV(options.userName || "Pengguna", delimiter),
+    ].join(delimiter),
+    [
+      escapeCSV("Tanggal Ekspor:", delimiter),
+      escapeCSV(new Date().toLocaleString("id-ID"), delimiter),
+    ].join(delimiter),
+    [
+      escapeCSV("Total Pemasukan:", delimiter),
+      escapeCSV(formatRupiah(totalIncome, false, currency), delimiter),
+    ].join(delimiter),
+    [
+      escapeCSV("Total Pengeluaran:", delimiter),
+      escapeCSV(formatRupiah(totalExpense, false, currency), delimiter),
+    ].join(delimiter),
+    [
+      escapeCSV("Arus Kas Bersih:", delimiter),
+      escapeCSV(formatRupiah(netCashflow, false, currency), delimiter),
+    ].join(delimiter),
     [""].join(delimiter), // Baris kosong pemisah
   ].join("\r\n");
 
@@ -74,7 +94,9 @@ function downloadCSV(
   const rows = transactions.map((tx, idx) => {
     const cat = categories.find((c) => c.id === tx.categoryId);
     const sourceWallet = wallets.find((w) => w.id === tx.walletId);
-    const destWallet = tx.toWalletId ? wallets.find((w) => w.id === tx.toWalletId) : null;
+    const destWallet = tx.toWalletId
+      ? wallets.find((w) => w.id === tx.toWalletId)
+      : null;
 
     const [datePart, timePart] = tx.date.split("T");
 
@@ -82,15 +104,18 @@ function downloadCSV(
       tx.type === "income"
         ? "Pemasukan"
         : tx.type === "expense"
-        ? "Pengeluaran"
-        : "Transfer Antar Rekening";
+          ? "Pengeluaran"
+          : "Transfer Antar Rekening";
 
     return [
       escapeCSV(idx + 1, delimiter),
       escapeCSV(formatDateID(datePart, { short: true }), delimiter),
       escapeCSV(timePart || "00:00", delimiter),
       escapeCSV(typeLabel, delimiter),
-      escapeCSV(cat?.name || (tx.type === "transfer" ? "Transfer" : "Umum"), delimiter),
+      escapeCSV(
+        cat?.name || (tx.type === "transfer" ? "Transfer" : "Umum"),
+        delimiter,
+      ),
       escapeCSV(sourceWallet?.name || "-", delimiter),
       escapeCSV(destWallet?.name || "-", delimiter),
       escapeCSV(tx.description, delimiter),
@@ -99,7 +124,13 @@ function downloadCSV(
     ].join(delimiter);
   });
 
-  const csvContent = BOM + metaHeader + "\r\n" + tableHeaders.join(delimiter) + "\r\n" + rows.join("\r\n");
+  const csvContent =
+    BOM +
+    metaHeader +
+    "\r\n" +
+    tableHeaders.join(delimiter) +
+    "\r\n" +
+    rows.join("\r\n");
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   triggerDownload(blob, fileName);
 }
@@ -111,7 +142,7 @@ function downloadStyledExcel(
   transactions: Transaction[],
   categories: Category[],
   wallets: Wallet[],
-  options: ExportOptions
+  options: ExportOptions,
 ) {
   const currency = options.currency || "IDR";
   const fileName =
@@ -218,7 +249,9 @@ function downloadStyledExcel(
           .map((tx, idx) => {
             const cat = categories.find((c) => c.id === tx.categoryId);
             const sourceWallet = wallets.find((w) => w.id === tx.walletId);
-            const destWallet = tx.toWalletId ? wallets.find((w) => w.id === tx.toWalletId) : null;
+            const destWallet = tx.toWalletId
+              ? wallets.find((w) => w.id === tx.toWalletId)
+              : null;
             const [datePart, timePart] = tx.date.split("T");
 
             const rowBg = idx % 2 === 0 ? "#ffffff" : "#f8fafc";
@@ -266,7 +299,9 @@ function downloadStyledExcel(
     </html>
   `;
 
-  const blob = new Blob([htmlContent], { type: "application/vnd.ms-excel;charset=utf-8;" });
+  const blob = new Blob([htmlContent], {
+    type: "application/vnd.ms-excel;charset=utf-8;",
+  });
   triggerDownload(blob, fileName);
 }
 
@@ -277,11 +312,9 @@ function triggerDownload(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.setAttribute("download", fileName);
-  document.body.appendChild(link);
+  link.download = fileName;
   link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
 /**
@@ -291,7 +324,7 @@ export function exportTransactionsToCSV(
   transactions: Transaction[],
   categories: Category[],
   wallets: Wallet[],
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ) {
   if (options.format === "excel") {
     downloadStyledExcel(transactions, categories, wallets, options);

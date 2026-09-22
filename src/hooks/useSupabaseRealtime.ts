@@ -64,7 +64,9 @@ export function useSupabaseRealtime({
             // Pertahankan transaksi yang baru dicatat di HP dalam 15 detik terakhir
             // agar tidak terhapus jika koneksi Supabase sedikit terlambat merespon
             const recentLocals = prev.filter((localTx) => {
-              const txTime = new Date(localTx.createdAt || Date.now()).getTime();
+              const txTime = new Date(
+                localTx.createdAt || Date.now(),
+              ).getTime();
               const isRecent = Date.now() - txTime < 15000; // 15 detik
               return isRecent && !incomingIds.has(localTx.id);
             });
@@ -83,36 +85,38 @@ export function useSupabaseRealtime({
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "transactions" },
-        handleRemoteChange
+        handleRemoteChange,
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "wallets" },
-        handleRemoteChange
+        handleRemoteChange,
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "categories" },
-        handleRemoteChange
+        handleRemoteChange,
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "goals" },
-        handleRemoteChange
+        handleRemoteChange,
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "budgets" },
-        handleRemoteChange
+        handleRemoteChange,
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "debts_loans" },
-        handleRemoteChange
+        handleRemoteChange,
       )
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
-          console.log(`🟢 Realtime Active: Listening for changes on ${user.email}`);
+          console.log(
+            `🟢 Realtime Active: Listening for changes on ${user.email}`,
+          );
         } else if (status === "CLOSED") {
           console.log(`🔴 Realtime Disconnected.`);
         }

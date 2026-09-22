@@ -24,28 +24,51 @@ const initialUserProfile: UserProfile = {
   biometricsEnabled: false,
   isLoggedIn: false,
   isOnboarded: false,
-  streakDays: 1,
+  streakDays: 0,
 };
 
 export function useSecurityState() {
-  const [user, setUser] = useState<UserProfile>(() => loadLocal("user", initialUserProfile));
-  const [hideBalances, setHideBalances] = useState<boolean>(() => loadLocal("hideBalances", false));
-  const [theme, setThemeState] = useState<ThemeMode>(() => loadLocal("theme", "light"));
-  const [accentColor, setAccentColorState] = useState<AccentColor>(() => loadLocal("accentColor", "indigo"));
-  const [navSettings, setNavSettings] = useState<NavSettings>(() => loadLocal("navSettings", defaultNavSettings));
+  const [user, setUser] = useState<UserProfile>(() =>
+    loadLocal("user", initialUserProfile),
+  );
+  const [hideBalances, setHideBalances] = useState<boolean>(() =>
+    loadLocal("hideBalances", false),
+  );
+  const [theme, setThemeState] = useState<ThemeMode>(() =>
+    loadLocal("theme", "light"),
+  );
+  const [accentColor, setAccentColorState] = useState<AccentColor>(() =>
+    loadLocal("accentColor", "indigo"),
+  );
+  const [navSettings, setNavSettings] = useState<NavSettings>(() =>
+    loadLocal("navSettings", defaultNavSettings),
+  );
   const [isLocked, setIsLocked] = useState<boolean>(() => {
     const u = loadLocal("user", initialUserProfile);
     return Boolean(u.pinEnabled && u.pinCode);
   });
 
-  useEffect(() => { localStorage.setItem("catatuang_user", JSON.stringify(user)); }, [user]);
-  useEffect(() => { localStorage.setItem("catatuang_hideBalances", JSON.stringify(hideBalances)); }, [hideBalances]);
-  useEffect(() => { localStorage.setItem("catatuang_theme", JSON.stringify(theme)); }, [theme]);
-  useEffect(() => { localStorage.setItem("catatuang_accentColor", JSON.stringify(accentColor)); }, [accentColor]);
-  useEffect(() => { localStorage.setItem("catatuang_navSettings", JSON.stringify(navSettings)); }, [navSettings]);
+  useEffect(() => {
+    localStorage.setItem("catatuang_user", JSON.stringify(user));
+  }, [user]);
+  useEffect(() => {
+    localStorage.setItem(
+      "catatuang_hideBalances",
+      JSON.stringify(hideBalances),
+    );
+  }, [hideBalances]);
+  useEffect(() => {
+    localStorage.setItem("catatuang_theme", JSON.stringify(theme));
+  }, [theme]);
+  useEffect(() => {
+    localStorage.setItem("catatuang_accentColor", JSON.stringify(accentColor));
+  }, [accentColor]);
+  useEffect(() => {
+    localStorage.setItem("catatuang_navSettings", JSON.stringify(navSettings));
+  }, [navSettings]);
 
   // Handle Theme
-    useEffect(() => {
+  useEffect(() => {
     const root = document.documentElement;
 
     const applyTheme = (isDark: boolean) => {
@@ -65,7 +88,9 @@ export function useSecurityState() {
       }
 
       // 3. KUNCI PERBAIKAN: HAPUS TOTAL SEMUA META THEME-COLOR LAMA DARI DOM
-      const existingMetas = document.querySelectorAll('meta[name="theme-color"]');
+      const existingMetas = document.querySelectorAll(
+        'meta[name="theme-color"]',
+      );
       existingMetas.forEach((meta) => meta.remove());
 
       // 4. BUAT ELEMEN META BARU DARI NOL (Memaksa iOS me-repaint status bar detik itu juga)
@@ -98,19 +123,57 @@ export function useSecurityState() {
   }, [accentColor, colorPreset]);
 
   // Auth Actions
-  const updateUserProfile = (profile: Partial<UserProfile>) => setUser((prev) => ({ ...prev, ...profile }));
+  const updateUserProfile = (profile: Partial<UserProfile>) =>
+    setUser((prev) => ({ ...prev, ...profile }));
   const loginUser = (email: string, name?: string) => {
-    setUser((prev) => ({ ...prev, email, name: name || email.split("@")[0], isLoggedIn: true, isOnboarded: true }));
+    setUser((prev) => ({
+      ...prev,
+      email,
+      name: name || email.split("@")[0],
+      isLoggedIn: true,
+      isOnboarded: true,
+    }));
   };
-  const registerUser = (data: { name: string; email: string; baseCurrency?: any; pinCode?: string }) => {
-    setUser((prev) => ({ ...prev, name: data.name, email: data.email, baseCurrency: data.baseCurrency || "IDR", pinEnabled: Boolean(data.pinCode), pinCode: data.pinCode || "", isLoggedIn: true, isOnboarded: true }));
+  const registerUser = (data: {
+    name: string;
+    email: string;
+    baseCurrency?: any;
+    pinCode?: string;
+  }) => {
+    setUser((prev) => ({
+      ...prev,
+      name: data.name,
+      email: data.email,
+      baseCurrency: data.baseCurrency || "IDR",
+      pinEnabled: Boolean(data.pinCode),
+      pinCode: data.pinCode || "",
+      isLoggedIn: true,
+      isOnboarded: true,
+    }));
   };
-  const completeOnboarding = (data: { name: string; email: string; baseCurrency?: any; pinCode?: string; initialBalance?: number }) => {
-    setUser((prev) => ({ ...prev, name: data.name || prev.name, email: data.email || prev.email, baseCurrency: data.baseCurrency || prev.baseCurrency, pinEnabled: Boolean(data.pinCode), pinCode: data.pinCode || "", isLoggedIn: true, isOnboarded: true }));
+  const completeOnboarding = (data: {
+    name: string;
+    email: string;
+    baseCurrency?: any;
+    pinCode?: string;
+    initialBalance?: number;
+  }) => {
+    setUser((prev) => ({
+      ...prev,
+      name: data.name || prev.name,
+      email: data.email || prev.email,
+      baseCurrency: data.baseCurrency || prev.baseCurrency,
+      pinEnabled: Boolean(data.pinCode),
+      pinCode: data.pinCode || "",
+      isLoggedIn: true,
+      isOnboarded: true,
+    }));
   };
 
   const logoutUser = async () => {
-    try { await supabase.auth.signOut(); } catch (err) {}
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {}
     localStorage.clear();
     setUser(initialUserProfile);
     setIsLocked(false);
@@ -120,31 +183,59 @@ export function useSecurityState() {
     const encoder = new TextEncoder();
     const data = encoder.encode(rawPin + "_catatuang_salt");
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    return Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
   };
 
   const setAppPin = async (pin: string) => {
     const hashed = await hashPin(pin);
     setUser((prev) => ({ ...prev, pinEnabled: true, pinCode: hashed }));
   };
-  const removeAppPin = () => setUser((prev) => ({ ...prev, pinEnabled: false, pinCode: "" }));
+  const removeAppPin = () =>
+    setUser((prev) => ({ ...prev, pinEnabled: false, pinCode: "" }));
 
   const unlockApp = (pin?: string) => {
-    if (!user.pinEnabled) { setIsLocked(false); return true; }
+    if (!user.pinEnabled) {
+      setIsLocked(false);
+      return true;
+    }
     hashPin(pin || "").then((hashed) => {
-      if (hashed === user.pinCode || pin === user.pinCode) { setIsLocked(false); return true; }
+      if (hashed === user.pinCode || pin === user.pinCode) {
+        setIsLocked(false);
+        return true;
+      }
       return false;
     });
     return pin === user.pinCode;
   };
-  const lockApp = () => { if (user.pinEnabled && user.pinCode) setIsLocked(true); };
+  const lockApp = () => {
+    if (user.pinEnabled && user.pinCode) setIsLocked(true);
+  };
 
   return {
-    user, setUser, hideBalances, setHideBalances, theme, setTheme: setThemeState,
-    accentColor, setAccentColor: setAccentColorState, colorPreset,
-    navSettings, updateNavSettings: (s: Partial<NavSettings>) => setNavSettings(p => ({ ...p, ...s })),
-    isLocked, setIsLocked, unlockApp, lockApp,
-    updateUserProfile, loginUser, registerUser, completeOnboarding, logoutUser,
-    setAppPin, removeAppPin,
+    user,
+    setUser,
+    hideBalances,
+    setHideBalances,
+    theme,
+    setTheme: setThemeState,
+    accentColor,
+    setAccentColor: setAccentColorState,
+    colorPreset,
+    navSettings,
+    updateNavSettings: (s: Partial<NavSettings>) =>
+      setNavSettings((p) => ({ ...p, ...s })),
+    isLocked,
+    setIsLocked,
+    unlockApp,
+    lockApp,
+    updateUserProfile,
+    loginUser,
+    registerUser,
+    completeOnboarding,
+    logoutUser,
+    setAppPin,
+    removeAppPin,
   };
 }

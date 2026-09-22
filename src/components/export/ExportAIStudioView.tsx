@@ -192,10 +192,8 @@ ${fullPromptAiStudio}
     const link = document.createElement("a");
     link.href = url;
     link.download = `CatatUang_Google_AI_Studio_${selectedPromptType}.txt`;
-    document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
   return (

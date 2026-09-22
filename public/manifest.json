@@ -1,6 +1,6 @@
 {
-  "name": "Finance App",
-  "short_name": "Finance",
+  "name": "Flowita App",
+  "short_name": "Flowita",
   "description": "Aplikasi Manajemen Keuangan Pribadi",
   "start_url": "/",
   "id": "/",
@@ -10,13 +10,13 @@
   "theme_color": "#0c0a09",
    "icons": [
     {
-      "src": "/icons/apple-touch-icon.jpg",
+      "src": "/icons/icon_flowita.jpg",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/apple-touch-icon.jpg",
+      "src": "/icons/icon_flowita.jpg",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
