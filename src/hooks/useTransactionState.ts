@@ -154,24 +154,84 @@ export function useTransactionState(
   };
 
   // =========================================================================
-  // 2. EDIT TRANSAKSI
+  // 2. EDIT TRANSAKSI (dengan koreksi saldo dompet)
   // =========================================================================
   const editTransaction = async (id: string, updatedData: Partial<Transaction>) => {
+    // Cari transaksi lama sebelum diubah
+    const oldTx = transactions.find((t) => t.id === id);
+    if (!oldTx) return;
+
+    const newTx: Transaction = { ...oldTx, ...updatedData };
+
+    // Kumpulkan semua wallet yang perlu diupdate saldonya
+    const walletBalanceChanges: Record<string, number> = {};
+
+    // Step 1: ROLLBACK saldo berdasarkan transaksi LAMA
+    if (oldTx.type === "expense") {
+      walletBalanceChanges[oldTx.walletId] = (walletBalanceChanges[oldTx.walletId] ?? 0) + oldTx.amount;
+    } else if (oldTx.type === "income") {
+      walletBalanceChanges[oldTx.walletId] = (walletBalanceChanges[oldTx.walletId] ?? 0) - oldTx.amount;
+    } else if (oldTx.type === "transfer") {
+      walletBalanceChanges[oldTx.walletId] = (walletBalanceChanges[oldTx.walletId] ?? 0) + oldTx.amount;
+      if (oldTx.toWalletId) {
+        walletBalanceChanges[oldTx.toWalletId] = (walletBalanceChanges[oldTx.toWalletId] ?? 0) - oldTx.amount;
+      }
+    }
+
+    // Step 2: TERAPKAN saldo berdasarkan transaksi BARU
+    if (newTx.type === "expense") {
+      walletBalanceChanges[newTx.walletId] = (walletBalanceChanges[newTx.walletId] ?? 0) - newTx.amount;
+    } else if (newTx.type === "income") {
+      walletBalanceChanges[newTx.walletId] = (walletBalanceChanges[newTx.walletId] ?? 0) + newTx.amount;
+    } else if (newTx.type === "transfer") {
+      walletBalanceChanges[newTx.walletId] = (walletBalanceChanges[newTx.walletId] ?? 0) - newTx.amount;
+      if (newTx.toWalletId) {
+        walletBalanceChanges[newTx.toWalletId] = (walletBalanceChanges[newTx.toWalletId] ?? 0) + newTx.amount;
+      }
+    }
+
+    // Step 3: Update state transaksi dan saldo dompet sekaligus
     setTransactions((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updatedData } : t))
+      prev.map((t) => (t.id === id ? newTx : t))
     );
 
+    const updatedWallets: Wallet[] = [];
+    setWallets((prev) =>
+      prev.map((w) => {
+        const delta = walletBalanceChanges[w.id];
+        if (delta !== undefined && delta !== 0) {
+          const updated = { ...w, balance: w.balance + delta };
+          updatedWallets.push(updated);
+          return updated;
+        }
+        return w;
+      })
+    );
+
+    // Step 4: Sinkronisasi ke Supabase
     if (user.isLoggedIn && user.email !== "guest@catatuang.app") {
-      await supabase
-        .from("transactions")
-        .update({
-          description: updatedData.description,
-          amount: updatedData.amount,
-          category_id: updatedData.categoryId,
-          wallet_id: updatedData.walletId,
-          date: updatedData.date,
-        })
-        .eq("id", id);
+      const tasks: Promise<any>[] = [
+        Promise.resolve(
+          supabase
+            .from("transactions")
+            .update({
+              type: newTx.type,
+              description: newTx.description,
+              amount: newTx.amount,
+              category_id: newTx.categoryId ?? null,
+              wallet_id: newTx.walletId,
+              to_wallet_id: newTx.toWalletId ?? null,
+              date: newTx.date,
+            })
+            .eq("id", id)
+        ),
+      ];
+
+      for (const w of updatedWallets) {
+        tasks.push(reconcileWalletBalanceDB(w.id, w.balance));
+      }
+
+      await Promise.all(tasks);
     }
   };
 
